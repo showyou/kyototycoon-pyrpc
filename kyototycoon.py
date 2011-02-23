@@ -34,13 +34,32 @@ class KyotoTycoon(object):
         res = self.ua.getresponse()
         body = res.read()
         if res.status != 200: return None
-        return res
+        print body
+        return body
 
     def set(self, key, value, xt = None):
-        pass
+        key = self.serializer.encode(key.encode("UTF-8"))
+        if isinstance(value,str): 
+            value = urllib.quote(self.serializer.encode(value.encode("UTF-8")))
+        else:
+            value = str(value)
+        print "key",key, "value",value
+        path = "/rpc/set?key="+urllib.quote(key)+"&value="+urllib.quote(value)
+        self.ua.request("GET", path)
+        res = self.ua.getresponse()
+        body = res.read()
+        if res.status != 200: return None
+        print body
+        return True
 
     def remove(self, key):
-        pass
+        key = self.serializer.encode(key.encode("UTF-8"))
+        path = "/rpc/remove?key="+urllib.quote(key)
+        self.ua.request("GET", path)
+        res = self.ua.getresponse()
+        body = res.read()
+        if res.status != 200: return None
+        return "ok"
 
     def cur_jump(self):
         path = "/rpc/cur_jump?CUR=1"
@@ -62,8 +81,9 @@ class KyotoTycoon(object):
             b3 = b2.split("\t")
             for bb in b3:
                 # 値の処理
-                print self.serializer.decode(bb)
-        return False
+                print self.serializer.decode(bb),
+        print ""
+        return body
 
     def vacuum(self):
         path = "/rpc/vacuum"
@@ -75,13 +95,13 @@ class KyotoTycoon(object):
             print( header[0] + " " + header[1])
         if res.status != 200: return None
         return True
-        
 
 
 if __name__ == "__main__":
     kt = KyotoTycoon()
     kt.open(port=4130)
+    kt.set("usa",1)
     kt.cur_jump()
-    kt.cur_get()
-    kt.cur_get()
-    kt.cur_get()
+    b = kt.cur_get()
+    while b != None:
+        b = kt.cur_get()
