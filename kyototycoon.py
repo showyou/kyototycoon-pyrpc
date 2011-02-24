@@ -3,6 +3,7 @@ import base64
 import urllib
 import httplib
 from lib.serializer.default import DefaultSerializer
+from lib.serializer.msgpacks import MsgpackSerializer
 
 def str2longint( string):
     n = 0
@@ -15,8 +16,11 @@ def str2longint( string):
 class KyotoTycoon(object):
     VERSION = '0.0.1'
 
-    def __init__(self, host='127.0.0.1', port = 1978, serializer="msgpack"):
-        self.serializer = DefaultSerializer()
+    def __init__(self, host='127.0.0.1', port = 1978, serializer="default"):
+        if serializer == "msgpack":
+            self.serializer = MsgpackSerializer()
+        else:
+            self.serializer = DefaultSerializer()
         pass
 
     def open(self, host = '127.0.0.1', port = 1978, timeout = 30):
@@ -77,11 +81,23 @@ class KyotoTycoon(object):
         print res.msg
         if res.status != 200: return None
         b = body.split("\n")[:-1]
+        # 1行分の処理->分割すべき
+        i = 0
         for b2 in b:
             b3 = b2.split("\t")
             for bb in b3:
-                # 値の処理
-                print self.serializer.decode(bb),
+                if i == 3:
+                    # 値の処理
+                    bb2 = self.serializer.decode(bb),
+                    if isinstance(bb2[0],int):
+                        print bb2[0],
+                    else:
+                        for val in bb2[0]:
+                            print val,",",
+                    i=-1
+                else:
+                    print bb,
+                i+=1
         print ""
         return body
 
@@ -98,9 +114,9 @@ class KyotoTycoon(object):
 
 
 if __name__ == "__main__":
-    kt = KyotoTycoon()
-    kt.open(port=4130)
-    kt.set("usa",1)
+    kt = KyotoTycoon(serializer="msgpack")
+    kt.open(port=1978)
+    #kt.set("usa",1)
     kt.cur_jump()
     b = kt.cur_get()
     while b != None:
