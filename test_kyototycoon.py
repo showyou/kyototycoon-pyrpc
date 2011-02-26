@@ -1,6 +1,7 @@
 import kyototycoon as kt
 import nose
 from nose.tools import ok_
+import sys
 
 class Test_KyotoTycoon(object):
     def __init__(self):
@@ -8,7 +9,12 @@ class Test_KyotoTycoon(object):
 
     def testOpen(self):
         #print self.kt
-        ok_(self.kt.open(port=4130))
+        if len(sys.argv)>1:
+            host = sys.argv[0]
+        else:
+            host = "127.0.0.1"
+
+        ok_(self.kt.open(host=host, port=4130))
 
     def testSet(self):
         self.testOpen()
