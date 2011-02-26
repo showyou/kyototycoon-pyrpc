@@ -1,7 +1,7 @@
 import kyototycoon as kt
 import nose
 from nose.tools import ok_
-import sys
+import simplejson
 
 class Test_KyotoTycoon(object):
     def __init__(self):
@@ -9,11 +9,14 @@ class Test_KyotoTycoon(object):
 
     def testOpen(self):
         #print self.kt
-        if len(sys.argv)>1:
-            host = sys.argv[0]
-        else:
+        try:
+            print "load config file"
+            f = open("config.json")
+            host = simplejson.loads(f.read())["host"]
+        except IOError:
+            print "use default params"
             host = "127.0.0.1"
-
+            
         ok_(self.kt.open(host=host, port=4130))
 
     def testSet(self):
